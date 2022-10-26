@@ -1,0 +1,103 @@
+version: "3.9"
+services:
+  postgres:
+    image: postgres:15-alpine
+    
+    container_name: postgres
+
+    restart: unless-stopped
+
+    environment:
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=main
+
+    expose:
+      - 5432
+
+    volumes:
+      - ./postgres:/var/lib/postgresql/data
+
+
+  backend:
+    image: ghcr.io/piwegro/harnas:main
+
+    container_name: backend
+
+    restart: unless-stopped
+
+    environment:
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB_MAIN=main
+
+    labels:
+      - "traefik.enable=true"
+
+      - "traefik.http.routers.backend.entrypoints=web"
+      - "traefik.http.routers.backend.rule=Host(`api.piwegro.lol`)"
+
+      - "traefik.http.routers.backend_secure.entrypoints=websecure"
+      - "traefik.http.routers.backend_secure.rule=Host(`api.piwegro.lol`)"
+      - "traefik.http.routers.backend_secure.tls.certresolver=myresolver"
+
+    expose:
+      - 80
+
+    depends_on:
+      - postgres
+
+
+  frontend:
+    image: nginxdemos/hello
+
+    container_name: frontend
+
+    restart: unless-stopped
+
+    labels:
+      - "traefik.enable=true"
+
+      - "traefik.http.routers.frontend.entrypoints=web"
+      - "traefik.http.routers.frontend.rule=Host(`piwegro.lol`, `www.piwegro.lol`)"
+
+      - "traefik.http.routers.frontend_secure.entrypoints=websecure"
+      - "traefik.http.routers.frontend_secure.rule=Host(`piwegro.lol`, `www.piwegro.lol`)"
+      - "traefik.http.routers.frontend_secure.tls.certresolver=myresolver"
+
+    expose:
+      - 80
+
+    depends_on:
+      - backend
+
+  
+  traefik:
+    image: traefik:2.9
+    container_name: traefik
+    
+    restart: unless-stopped
+    
+    command:
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+
+      - "--certificatesresolvers.myresolver.acme.email=karol@kucza.xyz"
+      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+      - "--certificatesresolvers.myresolver.acme.tlschallenge=true"
+
+    ports:
+      - "80:80"
+      - "443:443"
+
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "./letsencrypt:/letsencrypt"
+
+    depends_on:
+      - backend
+      - frontend

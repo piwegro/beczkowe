@@ -43,14 +43,14 @@ services:
       - "traefik.http.routers.backend_secure.tls.certresolver=myresolver"
 
     expose:
-      - 80
+      - 8080
 
     depends_on:
       - postgres
 
 
   frontend:
-    image: nginxdemos/hello
+    image: ghcr.io/piwegro/perla:main
 
     container_name: frontend
 
@@ -60,14 +60,14 @@ services:
       - "traefik.enable=true"
 
       - "traefik.http.routers.frontend.entrypoints=web"
-      - "traefik.http.routers.frontend.rule=Host(`piwegro.lol`, `www.piwegro.lol`)"
+      - "traefik.http.routers.frontend.rule=Host(`piwegro.lol`,`www.piwegro.lol`)"
 
       - "traefik.http.routers.frontend_secure.entrypoints=websecure"
-      - "traefik.http.routers.frontend_secure.rule=Host(`piwegro.lol`, `www.piwegro.lol`)"
+      - "traefik.http.routers.frontend_secure.rule=Host(`piwegro.lol`,`www.piwegro.lol`)"
       - "traefik.http.routers.frontend_secure.tls.certresolver=myresolver"
 
     expose:
-      - 80
+      - 3000
 
     depends_on:
       - backend

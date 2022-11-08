@@ -32,7 +32,8 @@ services:
       - POSTGRES_PASSWORD=password
       - POSTGRES_USER=postgres
       - POSTGRES_DB_MAIN=main
-
+      - SERVICE_ACCOUNT_PATH=/data/serviceAccount.json
+      
     labels:
       - "traefik.enable=true"
 
@@ -42,6 +43,9 @@ services:
       - "traefik.http.routers.backend_secure.entrypoints=websecure"
       - "traefik.http.routers.backend_secure.rule=Host(`api.piwegro.lol`)"
       - "traefik.http.routers.backend_secure.tls.certresolver=myresolver"
+
+    volumes:
+      - ./serviceAccount.json:/data/serviceAccount.json
 
     expose:
       - 8080

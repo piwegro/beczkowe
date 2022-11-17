@@ -37,9 +37,6 @@ services:
     labels:
       - "traefik.enable=true"
 
-      - "traefik.http.routers.backend.entrypoints=web"
-      - "traefik.http.routers.backend.rule=Host(`api.piwegro.lol`)"
-
       - "traefik.http.routers.backend_secure.entrypoints=websecure"
       - "traefik.http.routers.backend_secure.rule=Host(`api.piwegro.lol`)"
       - "traefik.http.routers.backend_secure.tls.certresolver=myresolver"
@@ -64,9 +61,6 @@ services:
     labels:
       - "traefik.enable=true"
 
-      - "traefik.http.routers.frontend.entrypoints=web"
-      - "traefik.http.routers.frontend.rule=Host(`piwegro.lol`,`www.piwegro.lol`)"
-
       - "traefik.http.routers.frontend_secure.entrypoints=websecure"
       - "traefik.http.routers.frontend_secure.rule=Host(`piwegro.lol`,`www.piwegro.lol`)"
       - "traefik.http.routers.frontend_secure.tls.certresolver=myresolver"
@@ -90,6 +84,9 @@ services:
 
       - "--entrypoints.web.address=:80"
       - "--entrypoints.websecure.address=:443"
+
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
 
       - "--certificatesresolvers.myresolver.acme.email=karol@kucza.xyz"
       - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
